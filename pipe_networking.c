@@ -18,8 +18,7 @@ int server_handshake(int *to_client) {
   mkfifo("WKP", 0664);
   int fd = open("WKP", O_RDONLY);
   read(fd, buffer, sizeof(100000));
-
-  if 
+  
   
   unlink("WKP");
   
@@ -37,9 +36,10 @@ int server_handshake(int *to_client) {
   returns the file descriptor for the downstream pipe.
   =========================*/
 int client_handshake(int *to_server) {
-  to_server = mkfifo("private_fifo", 0664);
+  mkfifo("private_fifo", 0664);
   int fd = open("WKP", O_WRONLY);
-  write(fd, to_server, 100000); 
+  write(fd, "private_fifo", 100000);
+  close(fd); 
 }
 
 
