@@ -15,12 +15,15 @@
   =========================*/
 int server_handshake(int *to_client) {
   char buffer[10000]; 
-  mkfifo("WKP", 0664);
+  int status = mkfifo("WKP", 0664);
+  printf("Status: %d\n", status); 
   int fd = open("WKP", O_RDONLY);
-  read(fd, buffer, sizeof(100000));
+  printf("fd:%d\n", fd);
+  //read(fd, buffer, sizeof(buffer));
+  remove("WKP");
+  printf("Stuff: %s\n", buffer); 
   
   
-  unlink("WKP");
   
   return 0;
 }
@@ -36,14 +39,27 @@ int server_handshake(int *to_client) {
   returns the file descriptor for the downstream pipe.
   =========================*/
 int client_handshake(int *to_server) {
-  mkfifo("private_fifo", 0664);
+  int status = mkfifo("private_fifo", 0664);
+
+
   int fd = open("WKP", O_WRONLY);
+  printf("fd:%d\n", fd);
+
+  /* 
+  int private_fd = open("private_fifo", O_RDWR);
+  printf("private_fd: %d\n", private_fd); 
   write(fd, "private_fifo", 100000);
-  close(fd); 
+  close(fd);
+ 
+  remove("private_fifo");
+  */
+  return 0;
 }
 
 
 int main() {
   int * chr; 
   server_handshake(chr);
+  //client_handshake(chr);
+  return 0;
 }
