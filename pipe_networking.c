@@ -21,9 +21,7 @@ int server_handshake(int *to_client) {
   printf("fd:%d\n", fd);
   //read(fd, buffer, sizeof(buffer));
   remove("WKP");
-  printf("Stuff: %s\n", buffer); 
-  
-  
+  printf("Stuff: %s\n", buffer);
   
   return 0;
 }
