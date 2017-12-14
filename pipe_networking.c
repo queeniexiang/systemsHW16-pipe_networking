@@ -3,10 +3,10 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 
+#define EXIT_MSG "Client exited"
 
 // HANDSHAKE_BUFFER_SIZE is defined in pipe_networking.h
-// BUFFER_SIZE is defined in pipe_networking.h
-
+// BUFFER_SIZE is defined in pipe_networking.
 /*=========================
   server_handshake
   Args_client
@@ -16,6 +16,15 @@
 
   returns the file descriptor for the upstream pipe.
   =========================*/
+
+char *edit_text(char *input) {
+  int i = 0;
+  while(input + i != NULL) {
+    input[i] = (input[i] + 5)%27;
+    i++;
+  }
+  return input; 
+}
 int server_handshake(int *to_client) {
   char handshake[HANDSHAKE_BUFFER_SIZE]; //string that stores the name of the private fifo to be sent
   mkfifo("WKP", 0664); // create the well known pipe
@@ -32,6 +41,15 @@ int server_handshake(int *to_client) {
     printf("Connection with client successfully established\n");
   }
   remove("WKP"); //remove the WKP so no other client can access it
+  while (strcmp(buffer, EXIT_MSG) != 0 ) {
+    printf("%d", strlen(buffer)); 
+    if (strlen(buffer) != 0) {
+      read(wkp, buffer ,sizeof(buffer)); // reads message
+      printf("msg: %s\n", buffer); // prints message
+      //write(private_fifo, m, sizeof(m)); // writes message to client
+    }
+  }
+  printf("%s", EXIT_MSG); 
   return wkp;
 }
 
