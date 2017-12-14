@@ -46,28 +46,61 @@ int server_handshake(int *to_client) {
   returns the file descriptor for the downstream pipe.
   =========================*/
 int client_handshake(int *to_server) {
+  int buffer[BUFFER_SIZE];
   char handshake[HANDSHAKE_BUFFER_SIZE] = "priv"; // set name for the private fifo
   int wkp = open("WKP", O_WRONLY); // open the well known pipe created by the server
   int write_ts_status = write(wkp, handshake, sizeof(handshake)); // write the name of the private fifo so the server can access it
   if (write_ts_status >= 0) {
     printf("Succesfully sent server name of private fifo!\n");
   }
-
+    
   printf("\nEstablishing private fifo..\n"); 
   printf("Name of private fifo: %s\n", handshake);// print name of private fifo
   mkfifo(handshake, 0664); // make the pipe
   int private_fifo = open(handshake, O_RDWR); // open the read end of private fifo
-  int buffer[BUFFER_SIZE];
   int s = read(private_fifo, buffer, sizeof(buffer));// check for first handshake message
-  if (s != -1) { // if there is a message send a second message
-    char msg[] = "Server messaged received! Sending new message.\n"; 
-    int w = write(private_fifo, msg, sizeof(msg));
-    close(private_fifo); 
+  if (s != -1) {
+    printf("Succesfully read message from server!\n");
+    return private_fifo;
   }
+  
   else {
-    printf("THE SERVER DIDN'T GET TO ME, 0 STARS!\n");
+     printf("THE SERVER DIDN'T GET TO ME, 0 STARS!\n");
+      return -1;
   }
-  close(private_fifo); 
-  *to_server = wkp;
-  return private_fifo;
+
+  return 0;
 }
+ 
+
+int client_to_server_msg(int pipe_fd) {
+  int buffer[BUFFER_SIZE];
+  char user_input[10000];
+  while (fgets(user_input, sizeof(user_input), stdin) != NULL) {
+    user_input[strlen(user_input)-1] = '\0';
+    printf("User input: %s\n", user_input);
+
+    if (pipe_fd == -1) {
+      printf("Pipe wasn't established properly... :( Exiting!\n");
+      return -1;
+    }
+    else {
+      int w = write(pipe_fd, user_input, sizeof(user_input));
+      if (w != -1) { // if there is a message send a second message
+	printf("Succesfully sent message to server!\n"); 
+      }
+    
+      else {
+	printf("THE SERVER DIDN'T GET TO ME, 0 STARS!\n");
+	return -1;
+      }
+    }
+    
+    close(pipe_fd);
+    
+  }
+  
+  return 0;
+}
+
+    
